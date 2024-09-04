@@ -1,3 +1,3 @@
 # Kali-Vanderbilt-open-api
-API Project linking code to test in Portfolio-IO project
+API Project for Code the Dream linking Portfolio Project together
 Kali Vanderbilt
