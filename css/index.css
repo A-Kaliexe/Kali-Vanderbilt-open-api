@@ -1,0 +1,23 @@
+nav a {
+    margin: 0 10px;
+    text-decoration: none;
+    color: #007BFF;
+
+}
+
+#weatherData {
+    white-space: pre-wrap;
+    /* Preserve whitespace for formatted JSON */
+    background-color: #415b83;
+    border: 1px solid #dddddd57;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+section {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: white;
+    border: 1px solid #ddd;
+}
