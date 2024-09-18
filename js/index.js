@@ -1,36 +1,98 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const apiUrl =
-    "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current=temperature_2m,is_day,precipitation&hourly=temperature_2m&temperature_unit=fahrenheit&timezone=America%2FChicago&models=best_match";
+const currentWeatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=39.76&longitude=-98.5&current=temperature_2m,is_day,weather_code&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto`;
+const hourlyWeatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=39.76&longitude=-98.5&hourly=temperature_2m,relative_humidity_2m&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto`;
 
-  axios
-    .get(apiUrl)
-    .then((response) => {
-      const data = response.data;
-      const current = data.current;
-      const hourly = data.hourly;
+// Fetches
+async function fetchWeatherData() {
+  try {
+    const currentResponse = await fetch(currentWeatherUrl);
+    if (!currentResponse.ok) {
+      throw new Error("Current weather request failed");
+    }
+    const currentData = await currentResponse.json();
+    console.log("Current Weather Data:", currentData);
+    displayCurrentWeather(currentData.current);
 
-      // Display current weather
-      const temperature = current.temperature_2m || "N/A";
-      const precipitation = current.precipitation || "N/A";
-      const location = `Latitude ${data.latitude}, Longitude ${data.longitude}`;
+    const hourlyResponse = await fetch(hourlyWeatherUrl);
+    if (!hourlyResponse.ok) {
+      throw new Error("Hourly forecast request failed");
+    }
+    const hourlyData = await hourlyResponse.json();
+    console.log("Hourly Weather Data:", hourlyData);
+    displayHourlyForecast(hourlyData.hourly);
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
 
-      document.getElementById("location").textContent = `Location: ${location}`;
-      document.getElementById(
-        "temperature"
-      ).textContent = `Temperature: ${temperature}°F`;
-      document.getElementById(
-        "conditions"
-      ).textContent = `Precipitation: ${precipitation} mm`;
+// displays
+function displayCurrentWeather(currentWeather) {
+  if (currentWeather) {
+    document.getElementById(
+      "location"
+    ).textContent = `Location: Latitude 39.76, Longitude -98.5`;
+    document.getElementById(
+      "temperature"
+    ).textContent = `Temperature: ${currentWeather.temperature_2m}°F`;
+    document.getElementById("is-day").textContent = `Day/Night: ${
+      currentWeather.is_day ? "Day" : "Night"
+    }`;
+    document.getElementById(
+      "conditions"
+    ).textContent = `Conditions: ${currentWeather.weather_code}`;
+  } else {
+    console.error("error");
+  }
+}
 
-      // Display hourly forecast
-      let forecastHtml = "<h3>Hourly Forecast</h3>";
-      hourly.temperature_2m.forEach((temp, index) => {
-        forecastHtml += `<p>Hour ${index + 1}: ${temp}°F</p>`;
-      });
-      document.getElementById("forecast").innerHTML = forecastHtml;
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-      document.getElementById("current-weather").innerHTML += "<p>Error.</p>";
+// Function to display hourly forecast data
+function displayHourlyForecast(hourlyData) {
+  if (hourlyData) {
+    const forecastDiv = document.getElementById("forecast");
+    forecastDiv.innerHTML = "";
+    hourlyData.temperature_2m.forEach((temp, index) => {
+      const time = new Date(hourlyData.time[index]).toLocaleTimeString();
+      const humidity = hourlyData.relative_humidity_2m[index];
+      forecastDiv.innerHTML += `<p>${time}: Temperature ${temp}°F, Humidity ${humidity}%</p>`;
     });
+  } else {
+    console.error("error");
+  }
+}
+
+// Event listener for navigation links
+document.addEventListener("DOMContentLoaded", () => {
+  const currentWeatherLink = document.getElementById("current-weather-link");
+  const hourlyForecastLink = document.getElementById("hourly-forecast-link");
+  const currentWeatherSection = document.getElementById("current-weather");
+  const hourlyForecastSection = document.getElementById("hourly-forecast");
+
+  if (
+    currentWeatherLink &&
+    hourlyForecastLink &&
+    currentWeatherSection &&
+    hourlyForecastSection
+  ) {
+    // Toggle sections based on the clicked link
+    function toggleSection(showCurrent) {
+      currentWeatherSection.hidden = !showCurrent;
+      hourlyForecastSection.hidden = showCurrent;
+    }
+
+    currentWeatherLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      toggleSection(true);
+    });
+
+    hourlyForecastLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      toggleSection(false);
+    });
+
+    toggleSection(true);
+
+    // Fetch and display both weather data
+    fetchWeatherData();
+  } else {
+    console.error("error");
+  }
 });
