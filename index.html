@@ -1,11 +1,39 @@
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <link rel="stylesheet" href="css/index.css">
-    <script src="js/index.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/styles.css">
+    <title>Weather App</title>
 </head>
 
 <body>
+    <div id="app">
+        <header>
+            <h1>Weather App</h1>
+            <nav>
+                <a href="#" id="current-weather-link">Current Weather</a>
+                <a href="#" id="hourly-forecast-link">Hourly Forecast</a>
+            </nav>
+        </header>
+
+        <section id="current-weather" class="weather-section">
+            <h2>Current Weather</h2>
+            <p id="location">Location: </p>
+            <p id="temperature">Temperature: </p>
+            <p id="is-day">Day/Night: </p>
+            <p id="conditions">Conditions: </p>
+        </section>
+
+        <section id="hourly-forecast" class="weather-section" hidden>
+            <h2>Hourly Forecast</h2>
+
+            <div id="forecast"></div>
+            <button id="show-forecast-btn">Show Hourly Forecast</button>
+        </section>
+    </div>
+    <script src="js/index.js" defer></script>
 </body>
 
 </html>
