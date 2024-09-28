@@ -1,7 +1,11 @@
 const currentWeatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=39.76&longitude=-98.5&current=temperature_2m,is_day,weather_code&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto`;
 const hourlyWeatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=39.76&longitude=-98.5&hourly=temperature_2m,relative_humidity_2m&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=auto`;
 
-// Fetches
+// Glob
+let forecastData = []; // Stores the hourly data
+let currentDisplayCount = 6;
+
+// Fetches weather data
 async function fetchWeatherData() {
   try {
     const currentResponse = await fetch(currentWeatherUrl);
@@ -18,13 +22,20 @@ async function fetchWeatherData() {
     }
     const hourlyData = await hourlyResponse.json();
     console.log("Hourly Weather Data:", hourlyData);
-    displayHourlyForecast(hourlyData.hourly);
+
+    // displays data
+    forecastData = hourlyData.hourly.temperature_2m.map((temp, index) => ({
+      time: new Date(hourlyData.hourly.time[index]).toLocaleTimeString(),
+      temperature: temp,
+      humidity: hourlyData.hourly.relative_humidity_2m[index],
+    }));
+
+    displayHourlyForecast();
   } catch (error) {
     console.error("Error:", error);
   }
 }
 
-// displays
 function displayCurrentWeather(currentWeather) {
   if (currentWeather) {
     document.getElementById(
@@ -40,24 +51,31 @@ function displayCurrentWeather(currentWeather) {
       "conditions"
     ).textContent = `Conditions: ${currentWeather.weather_code}`;
   } else {
-    console.error("error");
+    console.error("No current weather data available.");
   }
 }
 
-// Function to display hourly forecast data
-function displayHourlyForecast(hourlyData) {
-  if (hourlyData) {
-    const forecastDiv = document.getElementById("forecast");
-    forecastDiv.innerHTML = "";
-    hourlyData.temperature_2m.forEach((temp, index) => {
-      const time = new Date(hourlyData.time[index]).toLocaleTimeString();
-      const humidity = hourlyData.relative_humidity_2m[index];
-      forecastDiv.innerHTML += `<p>${time}: Temperature ${temp}°F, Humidity ${humidity}%</p>`;
-    });
-  } else {
-    console.error("error");
-  }
+function displayHourlyForecast() {
+  const forecastDiv = document.getElementById("forecast");
+  forecastDiv.innerHTML = "";
+
+  const dataToShow = forecastData.slice(0, currentDisplayCount);
+  dataToShow.forEach((entry) => {
+    const div = document.createElement("div");
+    div.textContent = `${entry.time}: Temperature ${entry.temperature}°F, Humidity ${entry.humidity}%`;
+    forecastDiv.appendChild(div);
+  });
+
+  // Show or hide the "Show More" button
+  const showMoreButton = document.getElementById("show-more-btn");
+  showMoreButton.style.display =
+    currentDisplayCount < forecastData.length ? "block" : "none";
 }
+
+document.getElementById("show-more-btn").addEventListener("click", () => {
+  currentDisplayCount += 6;
+  displayHourlyForecast();
+});
 
 // Event listener for navigation links
 document.addEventListener("DOMContentLoaded", () => {
@@ -89,10 +107,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     toggleSection(true);
-
-    // Fetch and display both weather data
     fetchWeatherData();
   } else {
-    console.error("error");
+    console.error("Navigation links or sections not found.");
   }
 });
